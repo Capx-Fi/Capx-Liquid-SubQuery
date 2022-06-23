@@ -1,0 +1,58 @@
+specVersion: 1.0.0
+name: Capx-Liquid-SubQuery
+version: 0.0.1
+runner:
+  node:
+    name: '@subql/node'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: Subgraph for Capx Liquid (Polkadot Ecosystem - Karura Parachain)
+repository: https://github.com/capxdev/Capx-Liquid-SubQuery
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b'
+  endpoint: wss://karura.api.onfinality.io/public-ws
+  chaintypes:
+    file: ./dist/chaintypes.js
+dataSources:
+  - kind: substrate/AcalaEvm
+    startBlock: 2147000
+    processor:
+      file: ./dist/acalaEvm.js
+      options:
+        abi: master
+        address: '0x7815e0fEB69b502C7C3CD6718b28375af05D6CC7'
+    assets:
+      master:
+        file: ./abi/Master.json
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleProjectInfo
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ProjectInfo(string name,address indexed tokenAddress,string tokenTicker,string documentHash,address creator,uint256 tokenDecimal)
+        - handler: handleCreateVest
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - CreateVestController(address indexed assetAddress,address creator,address userAddress,uint256 userAmount,uint256 unlockTime,address wrappedERC20Address,string wrappedAssetTicker,bool transferable)
+        - handler: handleWithdraw
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - WithdrawController(address indexed userAddress,uint256 amount,address wrappedTokenAddress)
+        - handler: handleCreateVestLock
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - CreateVestVesting(uint256 vestID,address indexed assetAddress,address creator,address userAddress,uint256 userAmount,uint256 unlockTime)
+        - handler: handleWithdrawLock
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - WithdrawVesting(uint256 vestID,address indexed userAddress,uint256 amount,address wrappedTokenAddress,uint256 unlockTime)
